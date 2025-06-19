@@ -198,13 +198,13 @@ class Logout:
 # ---------------------
 class EDA:
     def __init__(self):
-        st.title("📊 Bike Sharing Demand EDA")
+        st.title("📊 Population Trends EDA")
         uploaded = st.file_uploader("데이터셋 업로드 (train.csv)", type="csv")
         if not uploaded:
             st.info("train.csv 파일을 업로드 해주세요.")
             return
 
-        df = pd.read_csv(uploaded, parse_dates=['datetime'])
+        df = pd.read_csv(uploaded_file)
 
         tabs = st.tabs([
             "1. 기초 통계",
@@ -216,8 +216,6 @@ class EDA:
 
         # 1. 기초 통계
         with tabs[0]:
-            # CSV 읽기
-            df = pd.read_csv(uploaded_file)
 
             # '세종' 지역 데이터만 필터링
             sejong_df = df[df['행정구역'].str.contains('세종', na=False)].copy()
@@ -242,8 +240,7 @@ class EDA:
 
         # 2. 연도별 추이이
         with tabs[1]:
-            df = pd.read_csv(uploaded_file)
-
+            
             # '-' → 0으로 치환
             df.replace('-', 0, inplace=True)
 
@@ -428,50 +425,50 @@ class EDA:
         with tabs[4]:
             st.title("Regional Population Stacked Area Chart")
 
-        uploaded_file = st.file_uploader("Upload population_trends.csv", type="csv")
+            uploaded_file = st.file_uploader("Upload population_trends.csv", type="csv")
 
-        # 한글 지역명 → 영문 매핑
-        region_translation = {
-            '서울': 'Seoul', '부산': 'Busan', '대구': 'Daegu', '인천': 'Incheon', '광주': 'Gwangju',
-            '대전': 'Daejeon', '울산': 'Ulsan', '세종': 'Sejong', '경기': 'Gyeonggi',
-            '강원': 'Gangwon', '충북': 'Chungbuk', '충남': 'Chungnam', '전북': 'Jeonbuk',
-            '전남': 'Jeonnam', '경북': 'Gyeongbuk', '경남': 'Gyeongnam', '제주': 'Jeju'
-        }
+            # 한글 지역명 → 영문 매핑
+            region_translation = {
+                '서울': 'Seoul', '부산': 'Busan', '대구': 'Daegu', '인천': 'Incheon', '광주': 'Gwangju',
+                '대전': 'Daejeon', '울산': 'Ulsan', '세종': 'Sejong', '경기': 'Gyeonggi',
+                '강원': 'Gangwon', '충북': 'Chungbuk', '충남': 'Chungnam', '전북': 'Jeonbuk',
+                '전남': 'Jeonnam', '경북': 'Gyeongbuk', '경남': 'Gyeongnam', '제주': 'Jeju'
+            }
 
 
-          df = pd.read_csv(uploaded_file)
-        df.replace('-', 0, inplace=True)
+            df = pd.read_csv(uploaded_file)
+            df.replace('-', 0, inplace=True)
 
-        # 숫자형 변환
-        df['인구'] = pd.to_numeric(df['인구'], errors='coerce').fillna(0)
-        df['연도'] = pd.to_numeric(df['연도'], errors='coerce')
+            # 숫자형 변환
+            df['인구'] = pd.to_numeric(df['인구'], errors='coerce').fillna(0)
+            df['연도'] = pd.to_numeric(df['연도'], errors='coerce')
+    
+            # 전국 제외 및 영문 지역명으로 변환
+            df = df[df['지역'] != '전국'].copy()
+            df['Region_EN'] = df['지역'].map(region_translation)
 
-        # 전국 제외 및 영문 지역명으로 변환
-        df = df[df['지역'] != '전국'].copy()
-        df['Region_EN'] = df['지역'].map(region_translation)
+            # 피벗 테이블 생성: 연도 = index, 지역 = columns, 값 = 인구
+            pivot_df = df.pivot_table(index='연도', columns='Region_EN', values='인구', aggfunc='sum')
 
-        # 피벗 테이블 생성: 연도 = index, 지역 = columns, 값 = 인구
-        pivot_df = df.pivot_table(index='연도', columns='Region_EN', values='인구', aggfunc='sum')
+            # 연도 기준 정렬 및 결측치 0으로 대체
+            pivot_df = pivot_df.sort_index().fillna(0)
 
-        # 연도 기준 정렬 및 결측치 0으로 대체
-        pivot_df = pivot_df.sort_index().fillna(0)
+            # 그래프 그리기
+            st.subheader("Stacked Area Chart of Regional Population")
+    
+            fig, ax = plt.subplots(figsize=(12, 6))
+            pivot_df = pivot_df / 1000  # 천 단위로 축소
 
-        # 그래프 그리기
-        st.subheader("Stacked Area Chart of Regional Population")
+            colors = sns.color_palette("tab20", n_colors=len(pivot_df.columns))
+            pivot_df.plot(kind='area', stacked=True, ax=ax, color=colors)
 
-        fig, ax = plt.subplots(figsize=(12, 6))
-        pivot_df = pivot_df / 1000  # 천 단위로 축소
+            ax.set_title("Population Trend by Region", fontsize=14)
+            ax.set_xlabel("Year")
+            ax.set_ylabel("Population (thousands)")
+            ax.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0), title="Region")
+            ax.grid(True)
 
-        colors = sns.color_palette("tab20", n_colors=len(pivot_df.columns))
-        pivot_df.plot(kind='area', stacked=True, ax=ax, color=colors)
-
-        ax.set_title("Population Trend by Region", fontsize=14)
-        ax.set_xlabel("Year")
-        ax.set_ylabel("Population (thousands)")
-        ax.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0), title="Region")
-        ax.grid(True)
-
-        st.pyplot(fig)
+            st.pyplot(fig)
 
 # ---------------------
 # 페이지 객체 생성
