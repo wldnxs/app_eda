@@ -220,9 +220,6 @@ class EDA:
             # '세종' 지역 데이터만 필터링
             sejong_df = df[df['행정구역'].str.contains('세종', na=False)].copy()
 
-            # '-'를 0으로 치환
-            sejong_df.replace('-', 0, inplace=True)
-
             # 숫자열로 변환
             numeric_columns = ['인구', '출생아수(명)', '사망자수(명)']
             for col in numeric_columns:
@@ -240,9 +237,6 @@ class EDA:
 
         # 2. 연도별 추이이
         with tabs[1]:
-            
-            # '-' → 0으로 치환
-            df.replace('-', 0, inplace=True)
 
             # 숫자형으로 변환
             for col in ['인구', '출생아수(명)', '사망자수(명)']:
@@ -290,20 +284,16 @@ class EDA:
         # 3. 지역별 분석
         with tabs[2]:
             # 한글 지역명 → 영어로 변환하는 딕셔너리 (예시)
-        region_translation = {
+            region_translation = {
             '서울': 'Seoul', '부산': 'Busan', '대구': 'Daegu', '인천': 'Incheon', '광주': 'Gwangju',
             '대전': 'Daejeon', '울산': 'Ulsan', '세종': 'Sejong', '경기': 'Gyeonggi',
             '강원': 'Gangwon', '충북': 'Chungbuk', '충남': 'Chungnam', '전북': 'Jeonbuk',
             '전남': 'Jeonnam', '경북': 'Gyeongbuk', '경남': 'Gyeongnam', '제주': 'Jeju'
             }
 
-        st.title("Population Change by Region (Last 5 Years)")
-
-        uploaded_file = st.file_uploader("Upload population_trends.csv", type="csv")
+            st.title("Population Change by Region (Last 5 Years)")
 
 
-            df = pd.read_csv(uploaded_file)
-            df.replace('-', 0, inplace=True)
 
             # 숫자 변환
             df['인구'] = pd.to_numeric(df['인구'], errors='coerce').fillna(0)
@@ -374,8 +364,6 @@ class EDA:
 
         # 4. 변화량 분석
         with tabs[3]:
-            df = pd.read_csv(uploaded_file)
-            df.replace('-', 0, inplace=True)
 
             # 숫자형 변환
             df['인구'] = pd.to_numeric(df['인구'], errors='coerce').fillna(0)
@@ -425,8 +413,6 @@ class EDA:
         with tabs[4]:
             st.title("Regional Population Stacked Area Chart")
 
-            uploaded_file = st.file_uploader("Upload population_trends.csv", type="csv")
-
             # 한글 지역명 → 영문 매핑
             region_translation = {
                 '서울': 'Seoul', '부산': 'Busan', '대구': 'Daegu', '인천': 'Incheon', '광주': 'Gwangju',
@@ -435,9 +421,6 @@ class EDA:
                 '전남': 'Jeonnam', '경북': 'Gyeongbuk', '경남': 'Gyeongnam', '제주': 'Jeju'
             }
 
-
-            df = pd.read_csv(uploaded_file)
-            df.replace('-', 0, inplace=True)
 
             # 숫자형 변환
             df['인구'] = pd.to_numeric(df['인구'], errors='coerce').fillna(0)
