@@ -4,3 +4,5 @@ setuptools
 pandas
 matplotlib
 seaborn
+time
+io
